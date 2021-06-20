@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700;900&display=swap');
+
+
+html, body {
+    font-family: 'Roboto', sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+.formHandler {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    gap: 20px;
+    transform: translate(-50%,-50%);
+    top: 50%;
+    left: 50%;
+}
+
+.formHandler input {
+    display: block;
+    padding: 5px;
+}
+
+.formHandler button {
+    background-color: black;
+    border-color: black;
+    border: none;
+    padding: 5px;
+    color: white;
+    font-size: 1rem;
+}
+
+.formHandler button:hover {
+    background-color: #999999;
+
+}
+
+.formHandler img {
+    display: none;
+}
+
+.formHandler .showImg {
+    display: block;
+}
+
+.button {
+    display: inlein;
+    background-color: black;
+    border-color: black;
+    border: none;
+    padding: 10px;
+    color: white;
+    font-size: 1rem;
+    margin: 20px 40px;
+    text-decoration: none;
+    top: 0%;
+}
+
+#title {
+    display: inline;
+}
+
+.formHandler2 {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    gap: 20px;
+    transform: translate(-50%,-50%);
+    top: 150%;
+    left: 50%;
+}
+
+.formHandler2 input {
+    display: block;
+    padding: 5px;
+}
+
+.formHandler2 button {
+    background-color: black;
+    border-color: black;
+    border: none;
+    padding: 5px;
+    color: white;
+    font-size: 1rem;
+}
+
+.formHandler2 button:hover {
+    background-color: #999999;
+
+}
+
+.formHandler2 img {
+    display: none;
+}
+
+.formHandler2 .showImg {
+    display: block;
+}
