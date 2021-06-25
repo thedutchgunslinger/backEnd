@@ -101,3 +101,41 @@ html, body {
 .formHandler2 .showImg {
     display: block;
 }
+.formHandler3 {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    gap: 20px;
+    transform: translate(-50%,-50%);
+    top: 250%;
+    left: 50%;
+}
+
+.formHandler3 input {
+    display: block;
+    padding: 5px;
+}
+
+.formHandler3 button {
+    background-color: black;
+    border-color: black;
+    border: none;
+    padding: 5px;
+    color: white;
+    font-size: 1rem;
+}
+
+.formHandler3 button:hover {
+    background-color: #999999;
+
+}
+
+.formHandler23img {
+    display: none;
+}
+
+.formHandler3 .showImg {
+    display: block;
+}

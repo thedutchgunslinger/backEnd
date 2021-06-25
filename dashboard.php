@@ -7,52 +7,87 @@ if (
 ) {
     $conn = db_connect();
     $title = $_POST['title'];
+
     // Count total files
-    $countfiles = count($_FILES['files']['name']);
+
 
     // Prepared statement
     $query = "INSERT INTO images (name,image,title) VALUES(?,?,?)";
 
     $statement = $conn->prepare($query);
+    $targetDir = "upload/";
+    $watermarkImagePath = 'process/watermark.png';
 
-    // Loop all files
-    for ($i = 0; $i < $countfiles; $i++) {
 
-        // File name
-        $filename = $_FILES['files']['name'][$i];
+    // File upload path 
+    $fileName = basename($_FILES["files"]["name"][0]);
+    $targetFilePath = $targetDir . $fileName;
+    $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+    $target_file = 'upload/' . $fileName;
 
-        // Location
-        $target_file = 'upload/' . $filename;
-
-        // file extension
-        $file_extension = pathinfo(
-            $target_file,
-            PATHINFO_EXTENSION
-        );
-
-        $file_extension = strtolower($file_extension);
-
-        // Valid image extension
-        $valid_extension = array("png", "jpeg", "jpg");
-
-        if (in_array($file_extension, $valid_extension)) {
-
-            // Upload file
-            if (move_uploaded_file(
-                $_FILES['files']['tmp_name'][$i],
-                $target_file
-            )) {
-
-                // Execute query
-                $statement->execute(
-                    array($filename, $target_file, $title)
-                );
+    // Allow certain file formats 
+    $allowTypes = array('jpg', 'png', 'jpeg');
+    if (in_array($fileType, $allowTypes)) {
+        // Upload file to the server 
+        if (move_uploaded_file($_FILES["files"]["tmp_name"][0], $targetFilePath)) {
+            // Load the stamp and the photo to apply the watermark to 
+            $watermarkImg = imagecreatefrompng($watermarkImagePath);
+            switch ($fileType) {
+                case 'jpg':
+                    $im = imagecreatefromjpeg($targetFilePath);
+                    break;
+                case 'jpeg':
+                    $im = imagecreatefromjpeg($targetFilePath);
+                    break;
+                case 'png':
+                    $im = imagecreatefrompng($targetFilePath);
+                    break;
+                default:
+                    $im = imagecreatefromjpeg($targetFilePath);
             }
+
+            // Set the margins for the watermark 
+            $marge_right = 10;
+            $marge_bottom = 10;
+
+            // Get the height/width of the watermark image 
+            $sx = imagesx($watermarkImg);
+            $sy = imagesy($watermarkImg);
+
+            // Copy the watermark image onto our photo using the margin offsets and  
+            // the photo width to calculate the positioning of the watermark. 
+            imagecopy($im, $watermarkImg, imagesx($im) - $sx - $marge_right, imagesy($im) - $sy - $marge_bottom, 0, 0, imagesx($watermarkImg), imagesy($watermarkImg));
+
+            // Save image and free memory 
+            imagepng($im, $targetFilePath);
+            imagedestroy($im);
+
+            if (file_exists($targetFilePath)) {
+                $statusMsg = "The image with watermark has been uploaded successfully.";
+            } else {
+                $statusMsg = "Image upload failed, please try again.";
+            }
+        } else {
+            $statusMsg = "Sorry, there was an error uploading your file.";
         }
+    } else {
+        $statusMsg = 'Sorry, only JPG, JPEG, and PNG files are allowed to upload.';
     }
 
-    echo "File upload successfully";
+
+
+
+    // Upload file
+    {
+
+        // Execute query
+        $statement->execute(
+            array($fileName, $target_file, $title)
+        );
+    }
 }
+// }
+
 ?>
 
 
@@ -62,6 +97,8 @@ if (
 
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex">
+    <meta name="googlebot" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
     <title>Admin Dashboard</title>
@@ -72,7 +109,7 @@ if (
     <h2 id="title">Admin Dashboard PJ's kleine wereld</h2>
     <form method='post' action='' enctype='multipart/form-data' class="formHandler">
         <h1>Upload Afbeelding</h1>
-        <input type='file' name='files[]' id="customFileInput" onchange="showPreview(this);" accept="image/jpg, image/jpeg, image/png" multiple />
+        <input type='file' name='files[]' id="customFileInput" onchange="showPreview(this);" accept="image/jpg, image/jpeg, image/png" />
         <img src="#" id="previewImg">
         <!-- <input type='file' name='files[]' multiple /> -->
         <input type="text" name="title" placeholder="Titel">
@@ -86,6 +123,15 @@ if (
         </iframe>
         <!-- <input type='file' name='files[]' multiple /> -->
         <input type="text" name="titleVideo" placeholder="Titel">
+        <input type='submit' value='Submit' name='submit' class="button" />
+        <!-- <button type="submit">Upload</button> -->
+    </form>
+    <form method='post' action='' enctype='multipart/form-data' class="formHandler3">
+        <h1>Upload Art work</h1>
+        <input type='file' name='files[]' id="customFileInput" onchange="showPreviewArt(this);" accept="image/jpg, image/jpeg, image/png" multiple />
+        <img src="#" id="previewArt">
+        <!-- <input type='file' name='files[]' multiple /> -->
+        <input type="text" name="Arttitle" placeholder="Titel">
         <input type='submit' value='Submit' name='submit' class="button" />
         <!-- <button type="submit">Upload</button> -->
     </form>
@@ -116,9 +162,96 @@ if (
         //nu is het tijd om de query uit te voeren
         $query->execute();
     }
+
+    if (
+        $_SERVER['REQUEST_METHOD'] == "POST"
+        && isset($_POST["Arttitle"]) && $_POST["Arttitle"] != ""
+    ) {
+        $conn = db_connect();
+        $title = $_POST['Arttitle'];
+
+        // Count total files
+
+
+        // Prepared statement
+        $query = "INSERT INTO art (name,image,title) VALUES(?,?,?)";
+
+        $statement = $conn->prepare($query);
+        $targetDir = "upload/";
+        $watermarkImagePath = 'process/watermark.png';
+
+
+        // File upload path 
+        $fileName = basename($_FILES["files"]["name"][0]);
+        $targetFilePath = $targetDir . $fileName;
+        $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+        $target_file = 'upload/' . $fileName;
+
+        // Allow certain file formats 
+        $allowTypes = array('jpg', 'png', 'jpeg');
+        if (in_array($fileType, $allowTypes)) {
+            // Upload file to the server 
+            if (move_uploaded_file($_FILES["files"]["tmp_name"][0], $targetFilePath)) {
+                // Load the stamp and the photo to apply the watermark to 
+                $watermarkImg = imagecreatefrompng($watermarkImagePath);
+                switch ($fileType) {
+                    case 'jpg':
+                        $im = imagecreatefromjpeg($targetFilePath);
+                        break;
+                    case 'jpeg':
+                        $im = imagecreatefromjpeg($targetFilePath);
+                        break;
+                    case 'png':
+                        $im = imagecreatefrompng($targetFilePath);
+                        break;
+                    default:
+                        $im = imagecreatefromjpeg($targetFilePath);
+                }
+
+                // Set the margins for the watermark 
+                $marge_right = 10;
+                $marge_bottom = 10;
+
+                // Get the height/width of the watermark image 
+                $sx = imagesx($watermarkImg);
+                $sy = imagesy($watermarkImg);
+
+                // Copy the watermark image onto our photo using the margin offsets and  
+                // the photo width to calculate the positioning of the watermark. 
+                imagecopy($im, $watermarkImg, imagesx($im) - $sx - $marge_right, imagesy($im) - $sy - $marge_bottom, 0, 0, imagesx($watermarkImg), imagesy($watermarkImg));
+
+                // Save image and free memory 
+                imagepng($im, $targetFilePath);
+                imagedestroy($im);
+
+                if (file_exists($targetFilePath)) {
+                    $statusMsg = "The image with watermark has been uploaded successfully.";
+                } else {
+                    $statusMsg = "Image upload failed, please try again.";
+                }
+            } else {
+                $statusMsg = "Sorry, there was an error uploading your file.";
+            }
+        } else {
+            $statusMsg = 'Sorry, only JPG, JPEG, and PNG files are allowed to upload.';
+        }
+
+
+
+
+        // Upload file
+        {
+
+            // Execute query
+            $statement->execute(
+                array($fileName, $target_file, $title)
+            );
+        }
+    }
     ?>
 
     <script src="js/main.js"></script>
+    <script src="registerSW.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 
